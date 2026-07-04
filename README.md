@@ -86,6 +86,48 @@ Pra ações que não têm equivalente MMC (marcadores, loop, etc.), mapeie o
 botão como `control N` normal e faça MIDI Learn direto no Ardour
 (clique direito no controle desejado > MIDI Learn > aperte o botão).
 
+### Ações do editor (zoom, playhead, etc.) via `pulse`
+
+Pra eixos digitais tipo o hat de um gamepad, `pulse` dispara um CC=127
+uma vez ao cruzar pra cada lado (e CC=0 ao voltar pro centro) — pensado
+pra carregar o gatilho de uma ação do editor via **binding map** do
+Ardour (não é MIDI Learn direto; ações de menu em geral só são
+bindáveis via um arquivo XML):
+
+```
+axis 3 => pulse 102 103   # positivo=CC102, negativo=CC103
+```
+
+No binding map XML (carregado em Edit > Preferences > Control Surfaces
+> Generic MIDI), você associa cada CC a uma ação:
+
+```xml
+<ArdourMIDIBindings version="1.0.0" name="joy2midi-go" manufacturer="fellipec">
+  <Binding channel="1" ctl="102" value="127" action="Editor/scroll-playhead-forward"/>
+  <Binding channel="1" ctl="103" value="127" action="Editor/scroll-playhead-backward"/>
+  <Binding channel="1" ctl="104" value="127" action="Editor/temporal-zoom-in"/>
+  <Binding channel="1" ctl="105" value="127" action="Editor/temporal-zoom-out"/>
+</ArdourMIDIBindings>
+```
+
+Pra descobrir o nome exato de uma ação que não sabe (tipo "voltar pro
+início" ou "toggle do metrônomo"), rode `ardour -A` no terminal — ele
+lista todos os action-names disponíveis na sua versão instalada.
+
+### Dividir um eixo em duas CCs contínuas com `split`
+
+Diferente do `up`/`down` de `control` (que trava metade do curso em
+0), `split` usa o eixo inteiro: cada metade manda um CC **diferente**,
+proporcional à distância do centro:
+
+```
+axis 1 => split 1 11   # empurra = CC1 (mod), puxa = CC11 (expression)
+```
+
+Bom pra aproveitar as duas metades de um eixo com destinos diferentes
+(tipo o "JS+/JS-" assinalável separadamente em teclados Yamaha/Korg),
+em vez de desperdiçar metade do curso.
+
 ## Rodando
 
 ```sh

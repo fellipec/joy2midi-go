@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Binding map pro joy2midi-go + meu-joystick.cfg.
+
+  Como carregar:
+    Edit > Preferences > Control Surfaces > Generic MIDI > double-click
+    na entrada, aí seleciona este arquivo.
+
+  As duas ações comentadas no fim (goto-início e metrônomo) eu não tinha
+  100% de certeza do nome exato -- rode `ardour -A` no terminal com o
+  Ardour instalado, procure pelas ações de "Go to start"/"Home" e
+  "Toggle Click"/metrônomo no Transport menu, e troca o valor de
+  action="..." pelo nome real antes de descomentar.
+-->
+<ArdourMIDIBindings version="1.0.0" name="joy2midi-go" manufacturer="fellipec">
+
+  <!-- Hat0X: navegação do playhead -->
+  <Binding channel="1" ctl="102" value="127" action="Editor/scroll-playhead-forward"/>
+  <Binding channel="1" ctl="103" value="127" action="Editor/scroll-playhead-backward"/>
+
+  <!-- Hat0Y: zoom -->
+  <Binding channel="1" ctl="104" value="127" action="Editor/temporal-zoom-in"/>
+  <Binding channel="1" ctl="105" value="127" action="Editor/temporal-zoom-out"/>
+
+  <!-- ThumbBtn: panic (mata notas presas) -->
+  <Binding channel="1" ctl="107" value="127" action="MIDI/panic"/>
+
+  <!-- Botões da base: confirme o nome exato com `ardour -A` antes de usar -->
+  <!-- <Binding channel="1" ctl="108" value="127" action="Transport/GotoStart"/> -->
+  <!-- <Binding channel="1" ctl="109" value="127" action="Transport/ToggleClick"/> -->
+
+</ArdourMIDIBindings>

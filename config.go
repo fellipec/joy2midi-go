@@ -17,6 +17,12 @@ const (
 	targetControl           // eixo ou botão -> control change
 	targetBend              // eixo -> pitch bend
 	targetMMC               // botão/eixo -> comando MMC (transporte)
+	targetPulse             // eixo bidirecional -> 2 CCs diferentes, um por direção
+	                         // (pra vincular ações do editor via binding map do Ardour,
+	                         // tipo zoom in/out ou scroll left/right)
+	targetSplit              // eixo bidirecional -> 2 CCs CONTÍNUOS, um por metade
+	                          // (ex: empurrar = expression, puxar = mod wheel,
+	                          //  ao invés de desperdiçar metade do curso do eixo)
 )
 
 // mmcCommands mapeia nomes legíveis pros bytes de comando MMC padrão
@@ -232,7 +238,41 @@ func parseTarget(tokens []string) (mapping, error) {
 			arg2 = int(cmd2)
 		}
 		return mapping{kind: targetMMC, arg: int(cmd1), arg2: arg2}, nil
+	case "pulse":
+		// axis => pulse CC_POSITIVO CC_NEGATIVO
+		// Manda CC=127 uma vez ao cruzar pra cada lado, CC=0 ao voltar pro
+		// centro. Pensado pra vincular ações do editor do Ardour (zoom,
+		// scroll) via binding map -- não é pra controle contínuo.
+		if len(tokens) != 3 {
+			return mapping{}, fmt.Errorf("'pulse' precisa de exatamente 2 números de CC (positivo e negativo)")
+		}
+		ccPos, err := strconv.Atoi(tokens[1])
+		if err != nil || ccPos < 0 || ccPos > 127 {
+			return mapping{}, fmt.Errorf("CC positivo inválido %q", tokens[1])
+		}
+		ccNeg, err := strconv.Atoi(tokens[2])
+		if err != nil || ccNeg < 0 || ccNeg > 127 {
+			return mapping{}, fmt.Errorf("CC negativo inválido %q", tokens[2])
+		}
+		return mapping{kind: targetPulse, arg: ccPos, arg2: ccNeg}, nil
+	case "split":
+		// axis => split CC_POSITIVO CC_NEGATIVO
+		// Cada metade do curso do eixo manda um CC contínuo diferente
+		// (0-127 conforme a distância do centro), em vez de desperdiçar
+		// metade do curso como o modo up/down de 'control' faz.
+		if len(tokens) != 3 {
+			return mapping{}, fmt.Errorf("'split' precisa de exatamente 2 números de CC (positivo e negativo)")
+		}
+		ccPos, err := strconv.Atoi(tokens[1])
+		if err != nil || ccPos < 0 || ccPos > 127 {
+			return mapping{}, fmt.Errorf("CC positivo inválido %q", tokens[1])
+		}
+		ccNeg, err := strconv.Atoi(tokens[2])
+		if err != nil || ccNeg < 0 || ccNeg > 127 {
+			return mapping{}, fmt.Errorf("CC negativo inválido %q", tokens[2])
+		}
+		return mapping{kind: targetSplit, arg: ccPos, arg2: ccNeg}, nil
 	default:
-		return mapping{}, fmt.Errorf("alvo desconhecido %q (use note/control/bend/mmc/ignore)", tokens[0])
+		return mapping{}, fmt.Errorf("alvo desconhecido %q (use note/control/bend/mmc/pulse/split/ignore)", tokens[0])
 	}
 }

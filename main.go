@@ -187,6 +187,54 @@ func handleAxis(midi *MidiOut, cfg *Config, number int, value int16, verbose boo
 			}
 			// zone == 0 (voltou pro centro): não dispara nada
 		}
+	case targetPulse:
+		// Igual ao MMC, mas manda CC ao invés de SysEx -- pensado pra
+		// disparar ações do editor do Ardour via binding map (zoom,
+		// scroll do playhead, etc.), sem risco de soar nota se essa
+		// porta também tiver conectada num instrumento.
+		zone := 0
+		if value > int16(cfg.Deadzone) {
+			zone = 1
+		} else if value < -int16(cfg.Deadzone) {
+			zone = -1
+		}
+		prev := axisZone[number]
+		if zone != prev {
+			axisZone[number] = zone
+			switch {
+			case zone == 1:
+				midi.ControlChange(cfg.Channel, m.arg, 127)
+				if verbose {
+					log.Printf("axis %d -> pulse CC%d = 127 (positivo)", number, m.arg)
+				}
+			case zone == -1 && m.arg2 >= 0:
+				midi.ControlChange(cfg.Channel, m.arg2, 127)
+				if verbose {
+					log.Printf("axis %d -> pulse CC%d = 127 (negativo)", number, m.arg2)
+				}
+			case zone == 0:
+				// voltou pro centro: reseta o CC que tava ativo
+				switch prev {
+				case 1:
+					midi.ControlChange(cfg.Channel, m.arg, 0)
+				case -1:
+					if m.arg2 >= 0 {
+						midi.ControlChange(cfg.Channel, m.arg2, 0)
+					}
+				}
+			}
+		}
+	case targetSplit:
+		// Cada metade do eixo manda um CC contínuo diferente. Sempre manda
+		// os dois: o lado "inativo" naturalmente vira 0 (scaleToCC com
+		// dirUp/dirDown já trava em 0 fora da sua metade).
+		vPos := scaleToCC(value, dirUp)
+		vNeg := scaleToCC(value, dirDown)
+		midi.ControlChange(cfg.Channel, m.arg, vPos)
+		midi.ControlChange(cfg.Channel, m.arg2, vNeg)
+		if verbose {
+			log.Printf("axis %d -> split CC%d=%d / CC%d=%d", number, m.arg, vPos, m.arg2, vNeg)
+		}
 	}
 }
 
