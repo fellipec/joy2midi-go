@@ -13,13 +13,18 @@
 -->
 <ArdourMIDIBindings version="1.0.0" name="joy2midi-go" manufacturer="fellipec">
 
+  <!-- Throttle: fader do Master bus (binding contínuo via uri, não action;
+       repare que NÃO tem value= aqui, porque uri é pra controle contínuo,
+       não pra um disparo num valor específico) -->
+  <Binding channel="1" ctl="20" uri="/bus/gain master"/>
+
   <!-- Hat0X: navegação do playhead -->
   <Binding channel="1" ctl="102" value="127" action="Editor/scroll-playhead-forward"/>
   <Binding channel="1" ctl="103" value="127" action="Editor/scroll-playhead-backward"/>
 
   <!-- Hat0Y: zoom -->
-  <Binding channel="1" ctl="104" value="127" action="Editor/temporal-zoom-in"/>
-  <Binding channel="1" ctl="105" value="127" action="Editor/temporal-zoom-out"/>
+  <Binding channel="1" ctl="104" value="127" action="EditorEditing/temporal-zoom-in"/>
+  <Binding channel="1" ctl="105" value="127" action="EditorEditing/temporal-zoom-out"/>
 
   <!-- ThumbBtn: panic (mata notas presas) -->
   <Binding channel="1" ctl="107" value="127" action="MIDI/panic"/>
