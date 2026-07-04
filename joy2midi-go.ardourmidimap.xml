@@ -6,11 +6,10 @@
     Edit > Preferences > Control Surfaces > Generic MIDI > double-click
     na entrada, aí seleciona este arquivo.
 
-  As duas ações comentadas no fim (goto-início e metrônomo) eu não tinha
-  100% de certeza do nome exato -- rode `ardour -A` no terminal com o
-  Ardour instalado, procure pelas ações de "Go to start"/"Home" e
-  "Toggle Click"/metrônomo no Transport menu, e troca o valor de
-  action="..." pelo nome real antes de descomentar.
+  Todas as ações abaixo foram confirmadas contra uma lista real de
+  action-names do Ardour: não deve precisar trocar nada, mas se algo
+  não disparar, `ardour -A` no terminal lista as ações da SUA versão
+  instalada, pra comparar.
 -->
 <ArdourMIDIBindings version="1.0.0" name="joy2midi-go" manufacturer="fellipec">
 
@@ -25,8 +24,8 @@
   <!-- ThumbBtn: panic (mata notas presas) -->
   <Binding channel="1" ctl="107" value="127" action="MIDI/panic"/>
 
-  <!-- Botões da base: confirme o nome exato com `ardour -A` antes de usar -->
-  <!-- <Binding channel="1" ctl="108" value="127" action="Transport/GotoStart"/> -->
-  <!-- <Binding channel="1" ctl="109" value="127" action="Transport/ToggleClick"/> -->
+  <!-- Botões da base: nomes confirmados -->
+  <Binding channel="1" ctl="108" value="127" action="Transport/GotoStart"/>
+  <Binding channel="1" ctl="109" value="127" action="Transport/ToggleClick"/>
 
 </ArdourMIDIBindings>
