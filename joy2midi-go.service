@@ -1,0 +1,28 @@
+[Unit]
+Description=joy2midi-go: joystick-to-MIDI controller for Ardour
+# Este arquivo é um TEMPLATE de referência -- o jeito recomendado de
+# gerar a versão final é rodando ./install-service.sh, que resolve o
+# nome da device unit e escreve o arquivo automaticamente.
+#
+# Se preferir editar isto na mão: troque JOYSTICK_DEVICE_UNIT abaixo
+# pelo nome real da unit de device --
+#
+#   systemd-escape --path --suffix=device /dev/input/by-id/SEU-LINK-AQUI
+#
+# ATENÇÃO se for automatizar essa substituição com `sed`: o valor
+# retornado contém sequências tipo "\x2d", e o sed do GNU interpreta
+# isso como escape hexadecimal na string de substituição, convertendo
+# de volta pra "-" silenciosamente e corrompendo o nome da unit. Use
+# um heredoc do bash (é o que install-service.sh faz) ou edite à mão.
+BindsTo=JOYSTICK_DEVICE_UNIT
+After=JOYSTICK_DEVICE_UNIT
+After=pipewire.service wireplumber.service
+
+[Service]
+Type=simple
+ExecStart=%h/.local/bin/joy2midi-go -config %h/.config/joy2midi-go/meu-joystick.cfg -device /dev/input/by-id/SEU-LINK-AQUI -name meu-joystick
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=default.target

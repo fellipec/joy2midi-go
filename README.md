@@ -213,3 +213,38 @@ so this is safe.
   (Preferences > Control Surfaces > Generic MIDI settings) that
   ignores large jumps in incoming CC value by default — set it to 127
   if a fast-moving axis (like a throttle) doesn't seem to track.
+
+## Running automatically (systemd user service)
+
+`joy2midi-go.service` + `install-service.sh` set this up as a
+**systemd user unit** (not system-wide — it needs your login session's
+PipeWire/ALSA socket), bound to the joystick's device unit so it
+starts when the joystick is plugged in and stops cleanly when it's
+unplugged, with `Restart=on-failure` as a safety net.
+
+```sh
+# find a stable device path first (doesn't shift if you plug/unplug
+# other USB devices, unlike /dev/input/jsN)
+ls -la /dev/input/by-id/ | grep -i joystick
+
+./install-service.sh /dev/input/by-id/usb-YOUR-JOYSTICK-HERE
+```
+
+The script builds the binary to `~/.local/bin/`, copies
+`meu-joystick.cfg` to `~/.config/joy2midi-go/`, resolves the correct
+systemd device-unit name for you, writes the unit file to
+`~/.config/systemd/user/`, and enables + starts it.
+
+If you want it running even without an active graphical login (e.g.
+starting at boot on a headless or auto-login box):
+
+```sh
+loginctl enable-linger $USER
+```
+
+**If you ever edit the generated unit file by hand:** don't use `sed`
+to substitute the device-unit name into the template — `systemd-escape`
+output contains sequences like `\x2d`, and GNU sed's replacement-string
+parser treats that as a hex-escape and silently decodes it back to a
+literal `-`, corrupting the unit name. `install-service.sh` avoids this
+by building the file with a bash heredoc instead.
